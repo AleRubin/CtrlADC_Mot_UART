@@ -84,7 +84,7 @@ architecture Pscan_arc of Pscan is
 	component AURTModule is
 		Port(
 			clk 		: in std_logic;
-			Bluet_D	: in std_logic_vector(7 downto 0);      -- son los que se hablitan para mandar datos de la FPGA a la PC
+			Bluet_D	: in std_logic_vector(9 downto 0);      -- son los que se hablitan para mandar datos de la FPGA a la PC
 			enviar	: in std_logic;                        -- al pulsar el pushboton, envia datos(de los switch) 
 			ledr 		: out std_logic_vector(9 downto 0);		--dato recibido
 			ledg 		: out std_logic_vector(7 downto 0);		-- dato a enviar
@@ -98,13 +98,13 @@ architecture Pscan_arc of Pscan is
 signal env_Bluet				: STD_LOGIC;
 signal temp 					: NATURAL := 1;								--tiempo valor en entero para indicar seg, 120 = 1 min      
 signal Derech,Izq				: STD_LOGIC :='0';
-signal dato_recib				: STD_LOGIC_VECTOR(9 downto 0);
-signal dato_env,D_Bluet		: STD_LOGIC_VECTOR(7 downto 0);
+signal dato_recib,D_Bluet	: STD_LOGIC_VECTOR(9 downto 0);
+signal dato_env				: STD_LOGIC_VECTOR(7 downto 0);
 signal BLCD 					: STD_LOGIC_VECTOR(7 downto 0);
 signal ADC_Data				: STD_LOGIC_VECTOR(11 downto 0);
 signal NUMERO_PULSOS 		: INTEGER RANGE 0 TO 999999 := 0;		-- contador de pulsos por cuadratura
 signal steps					: INTEGER RANGE 0 TO 999999 := 0;		--paso de 1 o 1/2 grado para polarizador, 0=1/2 grado
-signal Bluet_Val,valorD		: INTEGER;
+signal Bluet_Val,valorD		: NATURAL;
 
 
 begin

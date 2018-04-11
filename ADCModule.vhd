@@ -12,6 +12,7 @@ entity ADCModule is
 			oDIN  : out STD_LOGIC;
 			oCS_n : out STD_LOGIC;
 			oSCLK : out STD_LOGIC;
+			Dat_B : out STD_LOGIC;
 			OutCkt: out STD_LOGIC_VECTOR(11 downto 0)
 			); 
 end entity;
@@ -57,9 +58,11 @@ begin
 		cont <= 0;
 	 elsif (rising_edge(iCLK)) then 
 	   if (cont = 15) then
-			cont <= 0;
+			cont  <= 0;
+			Dat_B <= '1';
 		else 
 			cont <= cont + 1;
+			Dat_B <= '0';
 		end if;
 	 end if;
 end process counter1_proc;
@@ -99,27 +102,27 @@ begin
 				adc_data(10) <= iDOUT;
 			elsif (m_cont = 5) then
 				adc_data(9)  <= iDOUT;
-		  elsif (m_cont = 6)  then 
+		   elsif (m_cont = 6)  then 
 				adc_data(8)  <= iDOUT;
-		  elsif (m_cont = 7)  then 
+		   elsif (m_cont = 7)  then 
 				adc_data(7)  <= iDOUT;
-		  elsif (m_cont = 8)  then 
+		   elsif (m_cont = 8)  then 
 				adc_data(6)  <= iDOUT;
-		  elsif (m_cont = 9)  then 
+		   elsif (m_cont = 9)  then 
 				adc_data(5)  <= iDOUT;
-		  elsif (m_cont = 10) then 
+		   elsif (m_cont = 10) then 
 				adc_data(4)  <= iDOUT;
-		  elsif (m_cont = 11) then 
+		   elsif (m_cont = 11) then 
 				adc_data(3)  <= iDOUT;
-		  elsif (m_cont = 12) then 
+		   elsif (m_cont = 12) then 
 				adc_data(2)  <= iDOUT;
-		  elsif (m_cont = 13) then 
+		   elsif (m_cont = 13) then 
 				adc_data(1)  <= iDOUT;
-		  elsif (m_cont = 14) then 
+		   elsif (m_cont = 14) then 
 				adc_data(0)  <= iDOUT;
-		  elsif (m_cont = 1)  then 
+		   elsif (m_cont = 1)  then 
 				OutCkt <= adc_data; 
-		  end if;
+		   end if;
 	 end if;
 end process output_ADC_proc;
 

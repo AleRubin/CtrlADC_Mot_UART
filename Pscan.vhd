@@ -108,13 +108,12 @@ signal Bluet_Val,valorD		: NATURAL;
 
 
 begin
-Bluet_Val   <=(3300 * (to_integer(UNSIGNED(ADC_Data))))/4095;
+--Bluet_Val   <=(3300 * (to_integer(UNSIGNED(ADC_Data))))/4095;
 --Bluet_Val   <= to_integer(UNSIGNED(ADC_Data));
 --valorD <= (Bluet_Val/1000);
-
+--D_Bluet <= std_logic_vector(to_unsigned(Bluet_Val, D_Bluet'length));
 
 ADC_D		<= ADC_Data;
-D_Bluet <= std_logic_vector(to_unsigned(Bluet_Val, D_Bluet'length));
 
 
 ADC_1	: ADCModule 	port map(clk, rst, iDOUT, iGO, iCH, oDIN, oCS_n, oSCLK, env_Bluet, ADC_Data);

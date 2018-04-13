@@ -46,6 +46,7 @@ architecture Pscan_arc of Pscan is
 			oCS_n : out STD_LOGIC;
 			oSCLK : out STD_LOGIC;
 			Dat_B : out STD_LOGIC;
+			adc_ld: out STD_LOGIC_VECTOR(11 downto 0);
 			OutCkt: out STD_LOGIC_VECTOR(11 downto 0)
 			);  
 	end component;
@@ -84,7 +85,7 @@ architecture Pscan_arc of Pscan is
 	component AURTModule is
 		Port(
 			clk 		: in std_logic;
-			Bluet_D	: in std_logic_vector(9 downto 0);      -- son los que se hablitan para mandar datos de la FPGA a la PC
+			Bluet_D	: in std_logic_vector(11 downto 0);      -- son los que se hablitan para mandar datos de la FPGA a la PC
 			enviar	: in std_logic;                        -- al pulsar el pushboton, envia datos(de los switch) 
 			ledr 		: out std_logic_vector(9 downto 0);		--dato recibido
 			ledg 		: out std_logic_vector(7 downto 0);		-- dato a enviar
@@ -98,7 +99,7 @@ architecture Pscan_arc of Pscan is
 signal env_Bluet				: STD_LOGIC;
 signal temp 					: NATURAL := 1;								--tiempo valor en entero para indicar seg, 120 = 1 min      
 signal Derech,Izq				: STD_LOGIC :='0';
-signal dato_recib,D_Bluet	: STD_LOGIC_VECTOR(9 downto 0);
+signal dato_recib				: STD_LOGIC_VECTOR(9 downto 0);
 signal dato_env				: STD_LOGIC_VECTOR(7 downto 0);
 signal BLCD 					: STD_LOGIC_VECTOR(7 downto 0);
 signal ADC_Data				: STD_LOGIC_VECTOR(11 downto 0);
@@ -108,21 +109,15 @@ signal Bluet_Val,valorD		: NATURAL;
 
 
 begin
---Bluet_Val   <=(3300 * (to_integer(UNSIGNED(ADC_Data))))/4095;
---Bluet_Val   <= to_integer(UNSIGNED(ADC_Data));
---valorD <= (Bluet_Val/1000);
---D_Bluet <= std_logic_vector(to_unsigned(Bluet_Val, D_Bluet'length));
-
-ADC_D		<= ADC_Data;
 
 
-ADC_1	: ADCModule 	port map(clk, rst, iDOUT, iGO, iCH, oDIN, oCS_n, oSCLK, env_Bluet, ADC_Data);
+ADC_1	: ADCModule 	port map(clk, rst, iDOUT, iGO, iCH, oDIN, oCS_n, oSCLK, env_Bluet, ADC_D, ADC_Data);
 
 LCD_2	: LCDModule 	port map(clk, rst, Derech, Izq, RS, RW, ENA, iCH, ADC_Data, DATA_LCD, BLCD);
 
 PWM_3	: PWMModule 	port map(clk, rst,selGrSeg,plusGrSg,start,NUMERO_PULSOS,temp,steps,motDC);
 
-UART_4: AURTModule	port map(clk, D_Bluet, env_Bluet, dato_recib, dato_env, TX, RX );
+UART_4: AURTModule	port map(clk, ADC_Data, env_Bluet, dato_recib, dato_env, TX, RX );
 
 
 end architecture Pscan_arc;

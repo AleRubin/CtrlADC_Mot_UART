@@ -13,6 +13,7 @@ entity ADCModule is
 			oCS_n : out STD_LOGIC;
 			oSCLK : out STD_LOGIC;
 			Dat_B : out STD_LOGIC;
+			adc_ld: out STD_LOGIC_VECTOR(11 downto 0);
 			OutCkt: out STD_LOGIC_VECTOR(11 downto 0)
 			); 
 end entity;
@@ -31,6 +32,7 @@ signal cont, m_cont	: INTEGER;
 signal go_en			: STD_LOGIC;
 signal iCLK, iCLK_n	: STD_LOGIC;
 signal adc_data		: STD_LOGIC_VECTOR(11 downto 0);
+
 
 begin
 
@@ -59,10 +61,10 @@ begin
 	 elsif (rising_edge(iCLK)) then 
 	   if (cont = 15) then
 			cont  <= 0;
-			Dat_B <= '1';
+			Dat_B <= '0';
 		else 
 			cont <= cont + 1;
-			Dat_B <= '0';
+			Dat_B <= '1';
 		end if;
 	 end if;
 end process counter1_proc;
@@ -91,10 +93,11 @@ begin
 		end if;
 end process channel_ADC_proc;
 
-output_ADC_proc: process(iCLK, iCLK_n, go_en)
+output_ADC_proc: process(iCLK, go_en)
 begin
 		if(go_en = '0') then 
 			adc_data <= "000000000000";
+			adc_ld   <= "000000000000";
 		elsif(rising_edge(iCLK)) then 
 			if (m_cont = 3) then
 				adc_data(11) <= iDOUT;
@@ -122,6 +125,7 @@ begin
 				adc_data(0)  <= iDOUT;
 		   elsif (m_cont = 1)  then 
 				OutCkt <= adc_data; 
+				adc_ld <= adc_data;
 		   end if;
 	 end if;
 end process output_ADC_proc;

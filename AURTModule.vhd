@@ -7,7 +7,7 @@ use ieee.numeric_std.all;
 entity AURTModule is
 	Port(
 			clk 		: in std_logic;
-			Bluet_D	: in std_logic_vector(9 downto 0);     -- datos de la FPGA a la PC
+			Bluet_D	: in std_logic_vector(11 downto 0);     -- datos de la FPGA a la PC
 			enviar	: in std_logic;                        -- bandera p/envia Bluet_D 
 			ledr 		: out std_logic_vector(9 downto 0);		-- dato recibido
 			ledg 		: out std_logic_vector(7 downto 0);		-- dato a enviar
@@ -52,8 +52,11 @@ end component rx;
 -----------------------------------------
 
 begin
-	U1: tx port map (clk, tx_start, tx_busy, tx_data, uart_txd);
-	U2: rx port map (clk, uart_rxd, rx_data, rx_busy);
+	
+--Bluet_Val   <=(3300 * (to_integer(UNSIGNED(ADC_Data))))/4095;
+--Bluet_Val   <= to_integer(UNSIGNED(ADC_Data));
+--valorD <= (Bluet_Val/1000);
+--D_Bluet <= std_logic_vector(to_unsigned(Bluet_Val, D_Bluet'length));
 	
 	process(rx_busy)
 	begin
@@ -74,4 +77,10 @@ begin
 			end if;
 		end if;
 	end process;
+	
+
+	U1: tx port map (clk, tx_start, tx_busy, tx_data, uart_txd);
+	U2: rx port map (clk, uart_rxd, rx_data, rx_busy);
+	
+	
 end behavioral;

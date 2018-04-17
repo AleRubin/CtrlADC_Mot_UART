@@ -1,20 +1,22 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
+use IEEE.std_logic_unsigned.all;
 
 entity ADCModule is
 	port ( 
-			clk   : in  STD_LOGIC;
-			rst	: in  STD_LOGIC;
-			iDOUT : in  STD_LOGIC;
-			iGO   : in  STD_LOGIC := '0';
-			iCH   : in  STD_LOGIC_VECTOR(2 downto 0);
-			oDIN  : out STD_LOGIC;
-			oCS_n : out STD_LOGIC;
-			oSCLK : out STD_LOGIC;
-			Dat_B : out STD_LOGIC;
-			adc_ld: out STD_LOGIC_VECTOR(11 downto 0);
-			OutCkt: out STD_LOGIC_VECTOR(11 downto 0)
+			clk   	: in  STD_LOGIC;
+			rst		: in  STD_LOGIC;
+			iDOUT 	: in  STD_LOGIC;
+			iGO   	: in  STD_LOGIC := '0';
+			iCH   	: in  STD_LOGIC_VECTOR(2 downto 0);
+			oDIN  	: out STD_LOGIC;
+			oCS_n 	: out STD_LOGIC;
+			oSCLK 	: out STD_LOGIC;
+			we_env 	: out STD_LOGIC_VECTOR(1 downto 0);			--(1) señal dato ADC listo (un ciclo de reloj bit(0)) bit(0) 14 ciclos clk 3.2KHz
+			dir_we	: out STD_LOGIC_VECTOR(9 downto 0);			--dir de ROM para guardar dato ADC
+			adc_ld	: out STD_LOGIC_VECTOR(11 downto 0);
+			OutCkt	: out STD_LOGIC_VECTOR(11 downto 0)			--valor ADC 
 			); 
 end entity;
 
@@ -31,14 +33,18 @@ architecture ADCModule_arc of ADCModule is
 signal cont, m_cont	: INTEGER;
 signal go_en			: STD_LOGIC;
 signal iCLK, iCLK_n	: STD_LOGIC;
+signal dir1				: STD_LOGIC_VECTOR(9 downto 0):="0000000000";
 signal adc_data		: STD_LOGIC_VECTOR(11 downto 0);
-
+signal Dat_B			: STD_LOGIC:='0';
 
 begin
 
 CLKPSBS: sel_Ksps_pll port map (clk, iCLK, iCLK_n);
 
-oCS_n  <=  not go_en;
+oCS_n			<= not go_en;
+we_env(1)	<= Dat_B;							
+we_env(0)	<= iCLK;
+dir_we		<= dir1;
 
 with go_en select
    oSCLK <= iCLK when '1',
@@ -61,10 +67,11 @@ begin
 	 elsif (rising_edge(iCLK)) then 
 	   if (cont = 15) then
 			cont  <= 0;
-			Dat_B <= '0';
-		else 
-			cont <= cont + 1;
+			dir1	<= dir1 + 1;
 			Dat_B <= '1';
+		else 
+			cont	<= cont + 1;
+			Dat_B <= '0';
 		end if;
 	 end if;
 end process counter1_proc;

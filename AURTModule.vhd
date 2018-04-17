@@ -8,7 +8,7 @@ entity AURTModule is
 	Port(
 			clk 		: in std_logic;
 			Bluet_D	: in std_logic_vector(11 downto 0);     -- datos de la FPGA a la PC
-			enviar	: in std_logic;                        -- bandera p/envia Bluet_D 
+			we_enR	: in std_logic_vector(1 downto 0);                        -- bandera p/envia Bluet_D 
 			ledr 		: out std_logic_vector(9 downto 0);		-- dato recibido
 			ledg 		: out std_logic_vector(7 downto 0);		-- dato a enviar
 			uart_txd : out std_logic;                  		-- transmisor del bluetooh 
@@ -18,13 +18,14 @@ entity AURTModule is
 
 architecture behavioral of AURTModule is
 
-signal tx_data  : std_logic_vector(7 downto 0);
-signal tx_start : std_logic := '0';
-signal tx_busy  : std_logic;
-
-signal rx_data : std_logic_vector(7 downto 0);
-signal rx_busy : std_logic;
-
+signal tx_data		: std_logic_vector(7 downto 0);
+signal tx_start	: std_logic := '0';
+signal tx_busy 	: std_logic;
+signal iCLK 		: std_logic;
+signal rx_data		: std_logic_vector(7 downto 0);
+signal rx_busy 	: std_logic;
+signal enviar 		: std_logic;
+signal cont			: integer:=0;
 
 -------------------------------------------------------
 component tx
@@ -53,11 +54,19 @@ end component rx;
 
 begin
 	
---Bluet_Val   <=(3300 * (to_integer(UNSIGNED(ADC_Data))))/4095;
---Bluet_Val   <= to_integer(UNSIGNED(ADC_Data));
---valorD <= (Bluet_Val/1000);
---D_Bluet <= std_logic_vector(to_unsigned(Bluet_Val, D_Bluet'length));
-	
+iCLK		<= we_enR(0);
+
+	process(iCLK)
+	begin
+		if rising_edge(iCLK) then
+			if we_enR(1) = '1' then
+				cont <= 0;
+			else
+				cont <= cont + 1;
+			end if;
+		end if;
+	end process;
+
 	process(rx_busy)
 	begin
 		if(rx_busy'event and rx_busy='0') then
@@ -68,11 +77,18 @@ begin
 	process(clk)
 	begin
 		if(clk'event and clk='1') then
-			if(enviar='0' and tx_busy='0') then
+			if(cont > 1 and cont < 6)	and (tx_busy='0') then
 				tx_data<=Bluet_D(7 downto 0);
 				tx_start<='1';
 				ledg<=tx_data;
-			else
+			elsif (cont = 7) then
+				tx_start<='0';
+			elsif (cont > 8 and cont < 14)	and (tx_busy='0') then
+				tx_data(3 downto 0)<=Bluet_D(11 downto 8);
+				tx_data(7 downto 4)<="0000";
+				tx_start<='1';
+				ledg<=tx_data;
+			elsif cont >= 14 then
 				tx_start<='0';
 			end if;
 		end if;

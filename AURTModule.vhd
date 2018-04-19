@@ -77,18 +77,20 @@ iCLK		<= we_enR(0);
 	process(clk)
 	begin
 		if(clk'event and clk='1') then
-			if(cont > 1 and cont < 6)	and (tx_busy='0') then
+			if(cont = 2) and (tx_busy='0') then
 				tx_data<=Bluet_D(7 downto 0);
 				tx_start<='1';
 				ledg<=tx_data;
-			elsif (cont = 7) then				-- 1000000 01011100
+			elsif (cont = 3) then				-- 1000000 01011100
 				tx_start<='0';
-			elsif (cont > 8 and cont < 14)	and (tx_busy='0') then
+			elsif (cont = 4) and (tx_busy='0') then
 				tx_data(3 downto 0)<=Bluet_D(11 downto 8);
 				tx_data(7 downto 4)<="0000";
 				tx_start<='1';
 				ledg<=tx_data;
-			elsif cont >= 14 then
+			elsif cont >= 5 then
+				tx_start<='0';
+			elsif cont > 0 and cont <2 then
 				tx_start<='0';
 			end if;
 		end if;

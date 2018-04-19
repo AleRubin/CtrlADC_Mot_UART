@@ -30,7 +30,7 @@ architecture ADCModule_arc of ADCModule is
 			);       
 	end component;
 
-signal cont, m_cont	: INTEGER;
+signal cont, m_cont	: INTEGER:=0;
 signal go_en			: STD_LOGIC;
 signal iCLK, iCLK_n	: STD_LOGIC;
 signal dir1				: STD_LOGIC_VECTOR(9 downto 0):="0000000000";

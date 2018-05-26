@@ -17,9 +17,11 @@ entity LCDModule is
 			ENA			: OUT STD_LOGIC;
 			WaveSel     : IN  STD_LOGIC_VECTOR(2 downto 0);
 			ADC_DataIn  : IN  STD_LOGIC_VECTOR(11 downto 0);
+			Espera		: IN INTEGER;
+			Avance		: IN INTEGER;
 			DATA_LCD		: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
 			BLCD 			: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
-			);
+		);
 	end LCDModule;
 
 	
@@ -73,8 +75,8 @@ SIGNAL DELAY_COR 				: INTEGER RANGE 0 TO 1000;
 SIGNAL TempVal, TempVal_1 	: natural;		-- para descomponer el contador de pulsos por cuadratura
 SIGNAL TempVal_2, TempVal_3: natural;		-- para descomponer el contador de pulsos por cuadratura
 SIGNAL TempVal_4, TempVal_5: natural;		-- para descomponer el contador de pulsos por cuadratura
---SIGNAL uniSeg, decSeg	   : INTEGER RANGE 0 TO 9 :=0;		-- para descomponer el contador de pulsos por cuadratura
---SIGNAL uniGrad,decGrad,cGr	: INTEGER RANGE 0 TO 9 :=0;		-- para descomponer el contador de pulsos por cuadratura
+SIGNAL uniSeg, decSeg	   : INTEGER RANGE 0 TO 9 :=0;		-- para descomponer el contador de pulsos por cuadratura
+SIGNAL uniGrad,decGrad,cGr	: INTEGER RANGE 0 TO 9 :=0;		-- para descomponer el contador de pulsos por cuadratura
 --SIGNAL steps					: INTEGER RANGE 0 TO 999999 := 0;		--paso de 1 o 1/2 grado para polarizador, 0=1/2 grado
 --SIGNAL temp 					: natural := 1;	--tiempo valor en entero para indicar seg, 120 = 1 min      
 SIGNAL DIR 						: INTEGER RANGE 0 TO 1024 := 0;
@@ -144,22 +146,6 @@ TempVal_4 <= (TempVal/1000);
 
 			
 
-	--control para leer numero de pulsos del encoder en cuadratura sentido horario adición, antihorario resta.
-	
---	process (phaseA, phaseB, rst)
---		begin
---		if (rst='0') then
---			NUMERO_PULSOS <= 0;
---		elsif rising_edge(phaseA) then
---			if  phaseB = '0' then
---				NUMERO_PULSOS <= NUMERO_PULSOS + 1;
---			else
---				NUMERO_PULSOS <= NUMERO_PULSOS - 1;
---			end if;	
---		end if;
---		
---		
---	end process;
 --	
 --	-- obtencion de valores residous para unidades, decenas, centenas, unidades decenas y centenas de miles
 --			
@@ -170,31 +156,59 @@ TempVal_4 <= (TempVal/1000);
 --			DECENAS  <= (NUMERO_PULSOS/10) mod 10;
 --			UNIDADES <=  NUMERO_PULSOS mod 10;
 --
---			cGr	  <= (steps/100) mod 10;
---			decGrad <= (steps/10) mod 10;
---			uniGrad <= steps mod 10;
---			
---			
---			decSeg <= (temp/10) mod 10;
---			uniSeg <=  temp mod 10; 
---	-- instrucciones para mandar a escribir en LCD
+			cGr	  <= (Avance/100) mod 10;
+			decGrad <= (Avance/10) mod 10;
+			uniGrad <= Avance mod 10;
+			
+			
+			decSeg <= (Espera/10) mod 10;
+			uniSeg <=  Espera mod 10; 
 
- INSTRUCCION(0) <= LCD_INI("00"); 				--INICIALIZAMOS LCD, CURSOR A HOME, CURSOR ON, PARPADEO ON.
- INSTRUCCION(1) <= BUCLE_INI(1);
- INSTRUCCION(2) <= POS(1,1);						--EMPEZAMOS A ESCRIBIR EN LA LINEA 1, POSICIï¿½N 1
- INSTRUCCION(3) <= INT_NUM(TempVal_4);
- INSTRUCCION(4) <= POS(1,2);			
- INSTRUCCION(5) <= CHAR_ASCII(x"2E");
- INSTRUCCION(6) <= POS(1,3);			
- INSTRUCCION(7) <= INT_NUM(TempVal_3);
- INSTRUCCION(8) <= POS(1,4);			
- INSTRUCCION(9) <= INT_NUM(TempVal_2);
- INSTRUCCION(10) <= POS(1,5);			
- INSTRUCCION(11) <= INT_NUM(TempVal_1);
- INSTRUCCION(12) <= POS(1,6);			
- INSTRUCCION(13) <= CHAR_ASCII(x"21");
- INSTRUCCION(14) <= CHAR_ASCII(x"21");
- INSTRUCCION(15) <= BUCLE_FIN(1);				-- fin bucle
+			
+			--	-- instrucciones para mandar a escribir en LCD
+
+ INSTRUCCION(0) <= LCD_INI("00"); 				-- INICIALIZAMOS LCD, CURSOR A HOME, CURSOR ON, PARPADEO ON.
+ INSTRUCCION(1) <= POS(1,1);						-- EMPEZAMOS A ESCRIBIR EN LA LINEA 1, POSICIï¿½N 1
+ INSTRUCCION(2) <= CHAR(MA);						-- Escribimos letra A Mayuscula
+ INSTRUCCION(3) <= CHAR(MD);						-- Escribimos letra D Mayuscula
+ INSTRUCCION(4) <= CHAR(MC);						-- Escribimos letra C Mayuscula
+ INSTRUCCION(5) <= CHAR_ASCII(x"3D");			-- ESCRIBIMOS EL CARACTER "="
+ INSTRUCCION(6) <= POS(1,10);			
+ INSTRUCCION(7) <= CHAR_ASCII(x"20");			-- ESCRIBIMOS EL CARACTER space
+ INSTRUCCION(8) <= CHAR(MAS);						-- Escribimos letra S Mayuscula
+ INSTRUCCION(9) <= CHAR(ME);						-- Escribimos letra E Mayuscula
+ INSTRUCCION(10) <= CHAR(MG);						-- Escribimos letra G Mayuscula
+ INSTRUCCION(11) <= CHAR_ASCII(x"3D");			-- ESCRIBIMOS EL CARACTER "="
+ INSTRUCCION(12) <= POS(2,1);
+ INSTRUCCION(13) <= CHAR(MA);						-- Escribimos letra A Mayuscula
+ INSTRUCCION(14) <= CHAR(MV);						-- Escribimos letra V Mayuscula
+ INSTRUCCION(15) <= CHAR(MA);						-- Escribimos letra A Mayuscula
+ INSTRUCCION(16) <= CHAR(MN);						-- Escribimos letra N Mayuscula
+ INSTRUCCION(17) <= CHAR(MC);						-- Escribimos letra C Mayuscula
+ INSTRUCCION(18) <= CHAR(ME);						-- Escribimos letra E Mayuscula
+ INSTRUCCION(19) <= CHAR_ASCII(x"3D");			-- ESCRIBIMOS EL CARACTER "="
+ INSTRUCCION(20) <= BUCLE_INI(1);
+ INSTRUCCION(21) <= POS(1,5);
+ INSTRUCCION(22) <= INT_NUM(TempVal_4);
+ INSTRUCCION(23) <= POS(1,6);			
+ INSTRUCCION(24) <= CHAR_ASCII(x"2E");
+ INSTRUCCION(25) <= POS(1,7);			
+ INSTRUCCION(26) <= INT_NUM(TempVal_3);
+ INSTRUCCION(27) <= POS(1,8);			
+ INSTRUCCION(28) <= INT_NUM(TempVal_2);
+ INSTRUCCION(29) <= POS(1,9);			
+ INSTRUCCION(30) <= INT_NUM(TempVal_1);
+ INSTRUCCION(31) <= POS(1,15);			
+ INSTRUCCION(32) <= INT_NUM(decSeg);
+ INSTRUCCION(33) <= POS(1,16);			
+ INSTRUCCION(34) <= INT_NUM(uniSeg);
+ INSTRUCCION(35) <= POS(2,8);			
+ INSTRUCCION(36) <= INT_NUM(cGr);
+ INSTRUCCION(37) <= POS(2,9);			
+ INSTRUCCION(38) <= INT_NUM(decGrad);
+ INSTRUCCION(39) <= POS(2,10);			
+ INSTRUCCION(40) <= INT_NUM(uniGrad);
+ INSTRUCCION(41) <= BUCLE_FIN(1);				-- fin bucle
  
  
 

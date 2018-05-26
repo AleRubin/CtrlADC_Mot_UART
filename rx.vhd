@@ -5,21 +5,25 @@ use ieee.numeric_std.all;
 entity rx is
 	port
 	(
-		clk: in std_logic;
-		rx_line : in std_logic;
-		data : out std_logic_vector(7 downto 0);
-		busy: out std_logic
+		clk		: in std_logic;
+		rx_line 	: in std_logic;
+		data 		: out std_logic_vector(7 downto 0);
+		busy		: out std_logic
 	);
 end rx;
 
 architecture main of rx is
 
-signal datafll: std_logic_vector(9 downto 0);
-signal rx_flg : std_logic := '0';
-signal prscl : integer range 0 to 5208 := 0;
-signal index : integer range 0 to 9 := 0;
+signal datafll			: std_logic_vector(9 downto 0);
+signal rxD				: std_logic_vector(7 downto 0);
+signal rx_flg			: std_logic := '0';
+signal prscl			: integer range 0 to 5208 := 0;
+signal cont				: integer range 0 to 3 := 0;
+signal index 			: integer range 0 to 9 := 0;
 
-begin
+begin				
+		
+		
 	process(clk)
 	begin
 		if(clk'event and clk='1') then
@@ -28,14 +32,10 @@ begin
 				prscl<=0;
 				busy<='1';
 				rx_flg<='1';
-			end if;
-				if(rx_flg='1') then
-					datafll(index)<=rx_line;
-					if(prscl<=5207) then
-						prscl<=prscl+1;
-					else
-						prscl<=0;
-					end if;
+			elsif	(rx_flg='1') then
+				datafll(index)<=rx_line;
+				if(prscl<=5207) then	
+					prscl<=prscl+1;
 					if(prscl=2500) then
 						if(index<9) then
 							index<=index+1;
@@ -47,9 +47,12 @@ begin
 							end if;
 							rx_flg<='0';
 							busy<='0';						
-						end if;
-					end if;	
+						end if; 
+					end if;
+				else
+					prscl<=0;
 				end if;
+			end if;
 		end if;
 	end process;
 end main;

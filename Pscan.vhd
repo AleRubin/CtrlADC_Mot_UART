@@ -24,11 +24,7 @@ entity Pscan is
 			TX			: OUT STD_LOGIC;
 			RX			: IN  STD_LOGIC;
 			--conexiones PWM para Motor DC
-			start		: IN  STD_LOGIC;
-			selGrSeg	: IN  STD_LOGIC;										-- selector para incrementar grados(1) o tiempo en espera(0)
-			plusGrSg : IN  STD_LOGIC;										-- push para aumentar Num de pulsos de DC o tiempo en espera .5s
-			phaseA	: IN  STD_LOGIC;
-			phaseB	: IN  STD_LOGIC;
+			encPhases: IN  STD_LOGIC_VECTOR(1 DOWNTO 0);
 			motDC		: OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
 	  );
 end entity;
@@ -63,6 +59,8 @@ architecture Pscan_arc of Pscan is
 				ENA			: OUT STD_LOGIC;
 				WaveSel     : IN  STD_LOGIC_VECTOR(2 downto 0);
 				ADC_DataIn  : IN  STD_LOGIC_VECTOR(11 downto 0);
+				Espera		: IN INTEGER;
+				Avance		: IN INTEGER;
 				DATA_LCD		: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
 				BLCD 			: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
 				);
@@ -71,25 +69,25 @@ architecture Pscan_arc of Pscan is
 	
 	component PWMModule is
 		Port(
-			clk		:  in  STD_LOGIC;											--reloj de 50MHz
-			rst		:  in  STD_LOGIC;											--rst
-			selector	:	in  STD_LOGIC;											-- selector para incrementar grados(1) o tiempo en espera(0)
-			plusGS	:	in  STD_LOGIC;											-- push para aumentar Num de pulsos de DC o tiempo en espera .5s
-			start		:  in  STD_LOGIC;											--inicio de velocidades
-			nPulsos	:	in  INTEGER RANGE 0 TO 999999 :=0 ;				-- contador de pulsos por cuadratura
-			t			:  out INTEGER RANGE 1 TO 120 := 1;					--tiempo valor en entero para indicar seg, 120 = 1 min
-			step		:	out INTEGER RANGE 0 TO 999999	:= 0;				--paso de 1 o 1/2 grado para polarizador, 0=1/2 grado
-			motor1	:  out STD_LOGIC_VECTOR (1 downto 0)				--motor
-			);                                 
+				clk		: in  STD_LOGIC;											--reloj de 50MHz
+				rst		: in  STD_LOGIC;											--rst
+				dato_R	: in  STD_LOGIC_VECTOR(7 downto 0);
+				phases	: in  STD_LOGIC_VECTOR(1 downto 0);
+				tEsp		: out INTEGER;
+				Grad		: out INTEGER;
+				leer		: out STD_LOGIC:='0';
+				motor1	: out STD_LOGIC_VECTOR (1 downto 0)				-- Primer motor
+      );                                 
 	end component ;
 	
 	component AURTModule is
 		Port(
 			clk 		: in  std_logic;
+			leerADC	: in  std_logic;
 			Bluet_D	: in  std_logic_vector(11 downto 0);   -- son los que se hablitan para mandar datos de la FPGA a la PC
 			we_enR	: in  std_logic_vector(1 downto 0);    -- al pulsar el pushboton, envia datos(de los switch) 
-			ledr 		: out std_logic_vector(9 downto 0);		--dato recibido
 			ledg 		: out std_logic_vector(7 downto 0);		-- dato a enviar
+			dReciv	: out std_logic_vector(7 downto 0);		-- dato recibido
 			uart_txd : out std_logic;                  		-- transmisor del bluetooh 
 			uart_rxd : in  std_logic                    		-- receptor   del bluetooh
 			);
@@ -106,29 +104,29 @@ architecture Pscan_arc of Pscan is
 	end component;
 
 	
-signal temp 					: NATURAL := 1;								--tiempo valor en entero para indicar seg, 120 = 1 min      
+signal temp 					: INTEGER;								--tiempo valor en entero para indicar seg, 120 = 1 min      
 signal Derech,Izq				: STD_LOGIC :='0';
 signal we_en					: STD_LOGIC_VECTOR(1 downto 0);
-signal dato_recib				: STD_LOGIC_VECTOR(9 downto 0);
 signal dir_wROM				: STD_LOGIC_VECTOR(9 downto 0);
 signal dat_env					: STD_LOGIC_VECTOR(7 downto 0);
 signal BLCD 					: STD_LOGIC_VECTOR(7 downto 0);
+signal dato_Reciv				: STD_LOGIC_VECTOR(7 downto 0);
 signal dato_UART				: STD_LOGIC_VECTOR(11 downto 0);
 signal ADC_Data				: STD_LOGIC_VECTOR(11 downto 0);
-signal NUMERO_PULSOS 		: INTEGER RANGE 0 TO 999999 := 0;		-- contador de pulsos por cuadratura
-signal steps					: INTEGER RANGE 0 TO 999999 := 0;		--paso de 1 o 1/2 grado para polarizador, 0=1/2 grado
+signal steps					: INTEGER RANGE 0 TO 999999;		-- pasos encoder para determinar grados de cada avance
 signal Bluet_Val,valorD		: NATURAL;
+signal leerTesp				: STD_LOGIC:='0';
 
 begin
 
 
 ADC	: ADCModule 	port map(clk, rst, iDOUT, iGO, iCH, oDIN, oCS_n, oSCLK, we_en, dir_wROM, ADC_D, ADC_Data);
 
-LCD	: LCDModule 	port map(clk, rst, Derech, Izq, RS, RW, ENA, iCH, ADC_Data, DATA_LCD, BLCD);
+LCD	: LCDModule 	port map(clk, rst, Derech, Izq, RS, RW, ENA, iCH, ADC_Data,temp,steps, DATA_LCD, BLCD);
 
-PWM	: PWMModule 	port map(clk, rst,selGrSeg,plusGrSg,start,NUMERO_PULSOS,temp,steps,motDC);
+PWM	: PWMModule 	port map(clk, rst, dato_Reciv, encPhases, temp, steps,leerTesp, motDC);
 
-UART	: AURTModule	port map(clk, dato_UART, we_en, dato_recib, dat_env, TX, RX );
+UART	: AURTModule	port map(clk, leerTesp, dato_UART, we_en, dat_env, dato_Reciv, TX, RX );
 
 ROM	: ROM_1			port map(clk,we_en,dir_wROM,ADC_Data,dato_UART);
 

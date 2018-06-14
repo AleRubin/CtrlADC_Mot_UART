@@ -80,14 +80,15 @@ iCLK		<= we_enR(0);
 	begin
 		if(clk'event and clk='1') then
 			if(cont = 1) and (tx_busy='0') and (leerADC='1') then
-				tx_data<=Bluet_D(7 downto 0);
+				tx_data(5 downto 0)<=Bluet_D(5 downto 0);
+				tx_data(7 downto 6)<="00";
 				tx_start<='1';
 				ledg<=tx_data;
 			elsif (cont = 2) then
 				tx_start<='0';
 			elsif (cont = 3) and (tx_busy='0') and (leerADC='1') then
-				tx_data(3 downto 0)<=Bluet_D(11 downto 8);
-				tx_data(7 downto 4)<="0000";
+				tx_data(5 downto 0)<=Bluet_D(11 downto 6);
+				tx_data(7 downto 6)<="01";
 				tx_start<='1';
 				ledg<=tx_data;
 			elsif cont >= 4 then										-- posiciones para poder hacer envio de info a la pc

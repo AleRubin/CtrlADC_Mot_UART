@@ -22,19 +22,21 @@ end PWMModule  ;
 
 ARCHITECTURE behavioral of PWMModule  is
 
-signal	pulso,pulso_s	: NATURAL; 
 signal	phaseA,phaseB	: STD_LOGIC;
-signal	pausa,pausa_s	: NATURAL:= 0;
-constant pos0           : INTEGER := 0;
+signal	pulso,pulso_s	: NATURAL:=0; 
+signal	pausa,pausa_s	: NATURAL:=0;
+constant pos0           : INTEGER:=0;
 signal	start				: STD_LOGIC:='0';
-constant pos1           : INTEGER := 180000;   
-constant pos2           : INTEGER := 300000;  
-constant pos3           : INTEGER := 240000;  
-signal 	vel				: INTEGER range 1 to 8;
-signal	PWM_Count   	: INTEGER range 1 to Max;							--1000000;
-signal	dato_Reciv		: STD_LOGIC_VECTOR(7 downto 0);
-signal	nPulsos			: INTEGER RANGE 0 TO 999999 :=0 ;				-- contador de pulsos por cuadratura
-
+constant pos1           : INTEGER := 220000;   
+constant pos2           : INTEGER := 440000;  
+constant pos3           : INTEGER := 550000;  
+constant pos4           : INTEGER := 660000;  
+constant pos5           : INTEGER := 770000;  
+constant pos6           : INTEGER := 880000;  
+constant pos7           : INTEGER := 770000;  
+constant pos8           : INTEGER := 660000;  
+signal 	vel				: INTEGER RANGE 0 TO 9 :=0;
+signal	PWM_Count   	: INTEGER RANGE 1 TO Max;							--1000000;
 
 
 begin
@@ -43,9 +45,9 @@ phaseB		<= phases(0);
 tEsp			<= pausa;
 Grad			<= pulso;
 
-start			<= dato_R(7);
-pulso			<= to_integer(UNSIGNED(dato_R(6 downto 3)));
-pausa			<= to_integer(UNSIGNED(dato_R(2 downto 0)));
+start			<= dato_R(0);
+pulso			<= 5*(1+(to_integer(UNSIGNED(dato_R(4 downto 1)))));
+pausa			<= 1+(to_integer(UNSIGNED(dato_R(7 downto 5))));
 
 	--control para leer numero de pulsos del encoder en cuadratura sentido horario adición, antihorario resta.
 		
@@ -61,8 +63,6 @@ pausa			<= to_integer(UNSIGNED(dato_R(2 downto 0)));
 			end if;	
 		end if;
 	end process;
-
-
 	process (clk,start,rst,nPulsos)
 		begin
 			if (rst='0') then

@@ -25,7 +25,9 @@ entity Pscan is
 			RX			: IN  STD_LOGIC;
 			--conexiones PWM para Motor DC
 			encPhases: IN  STD_LOGIC_VECTOR(1 DOWNTO 0);
-			motDC		: OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
+			motDC		: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			--conexiones Filtro Pasa Bajas
+			filtro	: IN  STD_LOGIC;
 	  );
 end entity;
 
@@ -103,7 +105,16 @@ architecture Pscan_arc of Pscan is
 			);
 	end component;
 
-	
+	component LOWPASS is
+		PORT( 
+			clk			: in  STD_LOGIC; 
+         clk_enable	: in  STD_LOGIC; 
+         reset			: in  STD_LOGIC; 
+         filter_in	: in  STD_LOGIC_VECTOR(11 DOWNTO 0); -- sfix12_En11
+         filter_out	: out STD_LOGIC_VECTOR(11 DOWNTO 0)  -- sfix12_En9
+         );
+	end component;
+
 signal temp 					: INTEGER;								--tiempo valor en entero para indicar seg, 120 = 1 min      
 signal Derech,Izq				: STD_LOGIC :='0';
 signal we_en					: STD_LOGIC_VECTOR(1 downto 0);
@@ -112,7 +123,8 @@ signal dat_env					: STD_LOGIC_VECTOR(7 downto 0);
 signal BLCD 					: STD_LOGIC_VECTOR(7 downto 0);
 signal dato_Reciv				: STD_LOGIC_VECTOR(7 downto 0);
 signal dato_UART				: STD_LOGIC_VECTOR(11 downto 0);
-signal ADC_Data				: STD_LOGIC_VECTOR(11 downto 0);
+signal dato_Filtro			: STD_LOGIC_VECTOR(11 downto 0);
+signal ADC_Data				: STD_LOGIC_VECTOR(11 downto 0):="000000000000";
 signal steps					: INTEGER RANGE 0 TO 999999;		-- pasos encoder para determinar grados de cada avance
 signal Bluet_Val,valorD		: NATURAL;
 signal leerTesp				: STD_LOGIC:='0';
@@ -122,13 +134,14 @@ begin
 
 ADC	: ADCModule 	port map(clk, rst, iDOUT, iGO, iCH, oDIN, oCS_n, oSCLK, we_en, dir_wROM, ADC_D, ADC_Data);
 
-LCD	: LCDModule 	port map(clk, rst, Derech, Izq, RS, RW, ENA, iCH, ADC_Data,temp,steps, DATA_LCD, BLCD);
+LCD	: LCDModule 	port map(clk, rst, Derech, Izq, RS, RW, ENA, iCH, dato_Filtro,temp,steps, DATA_LCD, BLCD);
 
-PWM	: PWMModule 	port map(clk, rst, dato_Reciv, encPhases, temp, steps,leerTesp, motDC);
 
 UART	: AURTModule	port map(clk, leerTesp, dato_UART, we_en, dat_env, dato_Reciv, TX, RX );
 
-ROM	: ROM_1			port map(clk,we_en,dir_wROM,ADC_Data,dato_UART);
+ROM	: ROM_1			port map(clk,we_en,dir_wROM,dato_Filtro,dato_UART);
+
+FLP	: LOWPASS		port map(clk,filtro,rst,ADC_Data,dato_Filtro);
 
 end architecture Pscan_arc;
 

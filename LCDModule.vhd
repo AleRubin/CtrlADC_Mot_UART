@@ -77,10 +77,7 @@ SIGNAL TempVal_2, TempVal_3: natural;		-- para descomponer el contador de pulsos
 SIGNAL TempVal_4, TempVal_5: natural;		-- para descomponer el contador de pulsos por cuadratura
 SIGNAL uniSeg, decSeg	   : INTEGER RANGE 0 TO 9 :=0;		-- para descomponer el contador de pulsos por cuadratura
 SIGNAL uniGrad,decGrad,cGr	: INTEGER RANGE 0 TO 9 :=0;		-- para descomponer el contador de pulsos por cuadratura
---SIGNAL steps					: INTEGER RANGE 0 TO 999999 := 0;		--paso de 1 o 1/2 grado para polarizador, 0=1/2 grado
---SIGNAL temp 					: natural := 1;	--tiempo valor en entero para indicar seg, 120 = 1 min      
 SIGNAL DIR 						: INTEGER RANGE 0 TO 1024 := 0;
---SIGNAL NUMERO_PULSOS 		: INTEGER RANGE 0 TO 999999 :=0 ;-- contador de pulsos por cuadratura
 SIGNAL VECTOR_MEM_S 			: STD_LOGIC_VECTOR(8 DOWNTO 0);
 SIGNAL DATA_S 					: STD_LOGIC_VECTOR(7 DOWNTO 0);
 SIGNAL C1S,C2S,C3S,C4S 		: STD_LOGIC_VECTOR(39 DOWNTO 0);
@@ -210,7 +207,5 @@ TempVal_4 <= (TempVal/1000);
  INSTRUCCION(40) <= INT_NUM(uniGrad);
  INSTRUCCION(41) <= BUCLE_FIN(1);				-- fin bucle
  
- 
-
 end Behavioral;
 

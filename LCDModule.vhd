@@ -19,6 +19,7 @@ entity LCDModule is
 			ADC_DataIn  : IN  STD_LOGIC_VECTOR(11 downto 0);
 			Espera		: IN INTEGER;
 			Avance		: IN INTEGER;
+			AvncPhas		: IN INTEGER;
 			DATA_LCD		: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
 			BLCD 			: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
 		);
@@ -69,12 +70,16 @@ CONSTANT CHAR8 : INTEGER := 8;
 CONSTANT grado	: INTEGER := 406;
 
 
+SIGNAL TempVal, TempVal_1 	: NATURAL;		-- para descomponer el contador de pulsos por cuadratura
+SIGNAL TempVal_2, TempVal_3: NATURAL;		-- para descomponer el contador de pulsos por cuadratura
+SIGNAL TempVal_4, TempVal_5: NATURAL;		-- para descomponer el contador de pulsos por cuadratura
+SIGNAL GradosAvanz			: INTEGER;
+SIGNAL centMill,decMill		: INTEGER;
+SIGNAL uniMill,centenas		: INTEGER;
+SIGNAL DECENAS,UNIDADES		: INTEGER;
 SIGNAL RS_S, RW_S, E_S 		: STD_LOGIC;
 SIGNAL DIR_S 					: INTEGER RANGE 0 TO 1024;
 SIGNAL DELAY_COR 				: INTEGER RANGE 0 TO 1000;
-SIGNAL TempVal, TempVal_1 	: natural;		-- para descomponer el contador de pulsos por cuadratura
-SIGNAL TempVal_2, TempVal_3: natural;		-- para descomponer el contador de pulsos por cuadratura
-SIGNAL TempVal_4, TempVal_5: natural;		-- para descomponer el contador de pulsos por cuadratura
 SIGNAL uniSeg, decSeg	   : INTEGER RANGE 0 TO 9 :=0;		-- para descomponer el contador de pulsos por cuadratura
 SIGNAL uniGrad,decGrad,cGr	: INTEGER RANGE 0 TO 9 :=0;		-- para descomponer el contador de pulsos por cuadratura
 SIGNAL DIR 						: INTEGER RANGE 0 TO 1024 := 0;
@@ -140,24 +145,21 @@ TempVal_2 <= (TempVal/10) mod 10;
 TempVal_3 <= (TempVal/100) mod 10;
 TempVal_4 <= (TempVal/1000);
 
-
-			
-
---	
---	-- obtencion de valores residous para unidades, decenas, centenas, unidades decenas y centenas de miles
---			
---			centMill <= (NUMERO_PULSOS/100000) mod 10;
---			decMill  <= (NUMERO_PULSOS/10000) mod 10;
---			uniMill  <= (NUMERO_PULSOS/1000) mod 10;
---			centenas <= (NUMERO_PULSOS/100) mod 10;
---			DECENAS  <= (NUMERO_PULSOS/10) mod 10;
---			UNIDADES <=  NUMERO_PULSOS mod 10;
+			-- obtencion de valores de cuanto ha avanzado
+			GradosAvanz <= (AvncPhas*360)/28880;
+			centMill <= (GradosAvanz*100000) mod 10; 
+			decMill  <= (GradosAvanz*10000) mod 10; 
+			uniMill  <= (GradosAvanz*1000) mod 10; 
+			centenas <= (GradosAvanz/100) mod 10;
+			DECENAS  <= (GradosAvanz/10) mod 10;
+			UNIDADES <= (GradosAvanz) mod 10;
 --
+			-- obtencion de valores de cuanto va avanzado
 			cGr	  <= (Avance/100) mod 10;
 			decGrad <= (Avance/10) mod 10;
 			uniGrad <= Avance mod 10;
-			
-			
+
+			-- obtencion de valores de cuanto tiempo va a esperar
 			decSeg <= (Espera/10) mod 10;
 			uniSeg <=  Espera mod 10; 
 
@@ -177,35 +179,49 @@ TempVal_4 <= (TempVal/1000);
  INSTRUCCION(10) <= CHAR(MG);						-- Escribimos letra G Mayuscula
  INSTRUCCION(11) <= CHAR_ASCII(x"3D");			-- ESCRIBIMOS EL CARACTER "="
  INSTRUCCION(12) <= POS(2,1);
- INSTRUCCION(13) <= CHAR(MA);						-- Escribimos letra A Mayuscula
- INSTRUCCION(14) <= CHAR(MV);						-- Escribimos letra V Mayuscula
- INSTRUCCION(15) <= CHAR(MA);						-- Escribimos letra A Mayuscula
- INSTRUCCION(16) <= CHAR(MN);						-- Escribimos letra N Mayuscula
- INSTRUCCION(17) <= CHAR(MC);						-- Escribimos letra C Mayuscula
- INSTRUCCION(18) <= CHAR(ME);						-- Escribimos letra E Mayuscula
- INSTRUCCION(19) <= CHAR_ASCII(x"3D");			-- ESCRIBIMOS EL CARACTER "="
- INSTRUCCION(20) <= BUCLE_INI(1);
- INSTRUCCION(21) <= POS(1,5);
- INSTRUCCION(22) <= INT_NUM(TempVal_4);
- INSTRUCCION(23) <= POS(1,6);			
- INSTRUCCION(24) <= CHAR_ASCII(x"2E");
- INSTRUCCION(25) <= POS(1,7);			
- INSTRUCCION(26) <= INT_NUM(TempVal_3);
- INSTRUCCION(27) <= POS(1,8);			
- INSTRUCCION(28) <= INT_NUM(TempVal_2);
- INSTRUCCION(29) <= POS(1,9);			
- INSTRUCCION(30) <= INT_NUM(TempVal_1);
- INSTRUCCION(31) <= POS(1,15);			
- INSTRUCCION(32) <= INT_NUM(decSeg);
- INSTRUCCION(33) <= POS(1,16);			
- INSTRUCCION(34) <= INT_NUM(uniSeg);
- INSTRUCCION(35) <= POS(2,8);			
- INSTRUCCION(36) <= INT_NUM(cGr);
- INSTRUCCION(37) <= POS(2,9);			
- INSTRUCCION(38) <= INT_NUM(decGrad);
- INSTRUCCION(39) <= POS(2,10);			
- INSTRUCCION(40) <= INT_NUM(uniGrad);
- INSTRUCCION(41) <= BUCLE_FIN(1);				-- fin bucle
+ INSTRUCCION(13) <= CHAR(MP);						-- Escribimos letra A Mayuscula
+ INSTRUCCION(14) <= CHAR(MA);						-- Escribimos letra V Mayuscula
+ INSTRUCCION(15) <= CHAR(MAS);						-- Escribimos letra A Mayuscula
+ INSTRUCCION(16) <= CHAR_ASCII(x"3D");
+ INSTRUCCION(17) <= BUCLE_INI(1);
+ INSTRUCCION(18) <= POS(1,5);
+ INSTRUCCION(19) <= INT_NUM(TempVal_4);
+ INSTRUCCION(20) <= POS(1,6);			
+ INSTRUCCION(21) <= CHAR_ASCII(x"2E");
+ INSTRUCCION(22) <= POS(1,7);			
+ INSTRUCCION(23) <= INT_NUM(TempVal_3);
+ INSTRUCCION(24) <= POS(1,8);			
+ INSTRUCCION(25) <= INT_NUM(TempVal_2);
+ INSTRUCCION(26) <= POS(1,9);			
+ INSTRUCCION(27) <= INT_NUM(TempVal_1);
+ INSTRUCCION(28) <= POS(1,15);			
+ INSTRUCCION(29) <= INT_NUM(decSeg);
+ INSTRUCCION(30) <= POS(1,16);			
+ INSTRUCCION(31) <= INT_NUM(uniSeg);
+ INSTRUCCION(32) <= POS(2,5);			
+ INSTRUCCION(33) <= INT_NUM(cGr);
+ INSTRUCCION(34) <= POS(2,6);			
+ INSTRUCCION(35) <= INT_NUM(decGrad);
+ INSTRUCCION(36) <= POS(2,7);			
+ INSTRUCCION(37) <= INT_NUM(uniGrad);
+ INSTRUCCION(38) <= POS(2,9);			
+ INSTRUCCION(39) <= INT_NUM(centMill);
+ INSTRUCCION(40) <= POS(2,10);			
+ INSTRUCCION(41) <= INT_NUM(decMill);
+ INSTRUCCION(42) <= POS(2,11);			
+ INSTRUCCION(43) <= INT_NUM(uniMill);
+ INSTRUCCION(44) <= POS(2,12);
+ INSTRUCCION(45) <= CHAR_ASCII(x"2E");
+ INSTRUCCION(46) <= POS(2,13);
+ INSTRUCCION(47) <= INT_NUM(centenas);
+ INSTRUCCION(48) <= POS(2,14);			
+ INSTRUCCION(49) <= INT_NUM(DECENAS);
+ INSTRUCCION(50) <= POS(2,15);			
+ INSTRUCCION(51) <= INT_NUM(UNIDADES);
+ INSTRUCCION(52) <= CREAR_CHAR(CHAR1);
+ INSTRUCCION(53) <= POS(2,16);
+ INSTRUCCION(54) <= CHAR_CREADO(CHAR1);
+ INSTRUCCION(55) <= BUCLE_FIN(1);				-- fin bucle
  
 end Behavioral;
 

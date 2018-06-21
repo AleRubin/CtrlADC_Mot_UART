@@ -15,6 +15,7 @@ Port (
 		phases	: in  STD_LOGIC_VECTOR(1 downto 0);
       tEsp		: out INTEGER;
 		Grad		: out INTEGER;
+		avance	: out INTEGER:=0;
 		leer		: out STD_LOGIC:='0';
 		motor1	: out STD_LOGIC_VECTOR (1 downto 0)				-- Primer motor
       );                                 
@@ -25,8 +26,8 @@ ARCHITECTURE behavioral of PWMModule  is
 signal	phaseA,phaseB	: STD_LOGIC;
 signal	pulso,pulso_s	: NATURAL:=0; 
 signal	pausa,pausa_s	: NATURAL:=0;
-constant pos0           : INTEGER:=0;
 signal	start				: STD_LOGIC:='0';
+constant pos0           : INTEGER := 100000;   
 constant pos1           : INTEGER := 220000;   
 constant pos2           : INTEGER := 440000;  
 constant pos3           : INTEGER := 550000;  
@@ -37,9 +38,12 @@ constant pos7           : INTEGER := 770000;
 constant pos8           : INTEGER := 660000;  
 signal 	vel				: INTEGER RANGE 0 TO 9 :=0;
 signal	PWM_Count   	: INTEGER RANGE 1 TO Max;							--1000000;
-
+signal   nPulsos        : INTEGER RANGE 0 TO 999999 :=0 ;                -- contador de pulsos por cuadratura
 
 begin
+
+avance		<= nPulsos;
+
 phaseA		<= phases(1);
 phaseB		<= phases(0);
 tEsp			<= pausa;
@@ -63,6 +67,7 @@ pausa			<= 1+(to_integer(UNSIGNED(dato_R(7 downto 5))));
 			end if;	
 		end if;
 	end process;
+	
 	process (clk,start,rst,nPulsos)
 		begin
 			if (rst='0') then

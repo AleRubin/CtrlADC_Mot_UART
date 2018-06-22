@@ -19,7 +19,7 @@ entity LCDModule is
 			ADC_DataIn  : IN  STD_LOGIC_VECTOR(11 downto 0);
 			Espera		: IN INTEGER;
 			Avance		: IN INTEGER;
-			AvncPhas		: IN INTEGER;
+			AvncPhas		: IN NATURAL;
 			DATA_LCD		: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
 			BLCD 			: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
 		);
@@ -73,10 +73,10 @@ CONSTANT grado	: INTEGER := 406;
 SIGNAL TempVal, TempVal_1 	: NATURAL;		-- para descomponer el contador de pulsos por cuadratura
 SIGNAL TempVal_2, TempVal_3: NATURAL;		-- para descomponer el contador de pulsos por cuadratura
 SIGNAL TempVal_4, TempVal_5: NATURAL;		-- para descomponer el contador de pulsos por cuadratura
-SIGNAL GradosAvanz			: INTEGER;
-SIGNAL centMill,decMill		: INTEGER;
-SIGNAL uniMill,centenas		: INTEGER;
-SIGNAL DECENAS,UNIDADES		: INTEGER;
+SIGNAL GradosAvanz			: NATURAL;
+SIGNAL centMill,decMill		: NATURAL;
+SIGNAL uniMill,centenas		: NATURAL;
+SIGNAL DECENAS,UNIDADES		: NATURAL;
 SIGNAL RS_S, RW_S, E_S 		: STD_LOGIC;
 SIGNAL DIR_S 					: INTEGER RANGE 0 TO 1024;
 SIGNAL DELAY_COR 				: INTEGER RANGE 0 TO 1000;
@@ -146,13 +146,13 @@ TempVal_3 <= (TempVal/100) mod 10;
 TempVal_4 <= (TempVal/1000);
 
 			-- obtencion de valores de cuanto ha avanzado
-			GradosAvanz <= (AvncPhas*360)/28880;
-			centMill <= (GradosAvanz*100000) mod 10; 
-			decMill  <= (GradosAvanz*10000) mod 10; 
-			uniMill  <= (GradosAvanz*1000) mod 10; 
-			centenas <= (GradosAvanz/100) mod 10;
-			DECENAS  <= (GradosAvanz/10) mod 10;
+			GradosAvanz <= ((AvncPhas*360000)/28880);
 			UNIDADES <= (GradosAvanz) mod 10;
+			DECENAS  <= (GradosAvanz/10) mod 10;
+			centenas <= (GradosAvanz/100) mod 10;
+			uniMill  <= (GradosAvanz/1000) mod 10; 
+			decMill  <= (GradosAvanz/10000) mod 10; 
+			centMill <= (GradosAvanz/100000) mod 10; 
 --
 			-- obtencion de valores de cuanto va avanzado
 			cGr	  <= (Avance/100) mod 10;

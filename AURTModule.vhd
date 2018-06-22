@@ -1,11 +1,13 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use IEEE.std_logic_unsigned.all;
 
 
 
 entity AURTModule is
 	Port(
+			posPoli	: in  integer;
 			clk 		: in  std_logic;
 			leerADC	: in  std_logic;
 			Bluet_D	: in  std_logic_vector(11 downto 0);   -- son los que se hablitan para mandar datos de la FPGA a la PC
@@ -21,6 +23,7 @@ architecture behavioral of AURTModule is
 
 signal tx_data		: std_logic_vector(7 downto 0);
 signal rx_data		: std_logic_vector(7 downto 0);
+signal avanPoli	: std_logic_vector(7 downto 0);
 signal tx_start	: std_logic:='0';
 signal enviar 		: std_logic:='0';
 signal cont			: integer:=0;
@@ -56,6 +59,7 @@ end component rx;
 begin
 	
 iCLK		<= we_enR(0);
+
 
 	process(iCLK)
 	begin

@@ -61,7 +61,7 @@ architecture Pscan_arc of Pscan is
 				ADC_DataIn  : IN  STD_LOGIC_VECTOR(11 downto 0);
 				Espera		: IN INTEGER;
 				Avance		: IN INTEGER;
-				AvncPhas		: IN INTEGER;
+				AvncPhas		: IN NATURAL;
 				DATA_LCD		: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
 				BLCD 			: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
 				);
@@ -76,7 +76,7 @@ architecture Pscan_arc of Pscan is
 				phases	: in  STD_LOGIC_VECTOR(1 downto 0);
 				tEsp		: out INTEGER;
 				Grad		: out INTEGER;
-				avance	: out INTEGER:=0;
+				avance	: out NATURAL;
 				leer		: out STD_LOGIC:='0';
 				motor1	: out STD_LOGIC_VECTOR (1 downto 0)				-- Primer motor
       );                                 
@@ -84,6 +84,7 @@ architecture Pscan_arc of Pscan is
 	
 	component AURTModule is
 		Port(
+			posPoli	: in  integer;
 			clk 		: in  std_logic;
 			leerADC	: in  std_logic;
 			Bluet_D	: in  std_logic_vector(11 downto 0);   -- son los que se hablitan para mandar datos de la FPGA a la PC
@@ -106,7 +107,7 @@ architecture Pscan_arc of Pscan is
 	end component;
 
 signal temp 					: INTEGER;								--tiempo valor en entero para indicar seg, 120 = 1 min      
-signal AvancPhases			: INTEGER;
+signal AvancPhases			: NATURAL;
 signal Derech,Izq				: STD_LOGIC :='0';
 signal we_en					: STD_LOGIC_VECTOR(1 downto 0);
 signal dir_wROM				: STD_LOGIC_VECTOR(9 downto 0);
@@ -127,9 +128,9 @@ ADC	: ADCModule 	port map(clk, rst, iDOUT, iGO, iCH, oDIN, oCS_n, oSCLK, we_en, 
 
 LCD	: LCDModule 	port map(clk, rst, Derech, Izq, RS, RW, ENA, iCH, ADC_Data,temp,steps, AvancPhases, DATA_LCD, BLCD);
 
-PWM    : PWMModule     port map(clk, rst, dato_Reciv, encPhases, temp, steps, AvancPhases, leerTesp, motDC);
+PWM   : PWMModule     port map(clk, rst, dato_Reciv, encPhases, temp, steps, AvancPhases, leerTesp, motDC);
 
-UART	: AURTModule	port map(clk, leerTesp, dato_UART, we_en, dat_env, dato_Reciv, TX, RX );
+UART	: AURTModule	port map(AvancPhases, clk, leerTesp, dato_UART, we_en, dat_env, dato_Reciv, TX, RX );
 
 ROM	: ROM_1			port map(clk,we_en,dir_wROM,ADC_Data,dato_UART);
 

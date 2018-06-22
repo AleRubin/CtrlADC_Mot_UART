@@ -15,8 +15,8 @@ Port (
 		phases	: in  STD_LOGIC_VECTOR(1 downto 0);
       tEsp		: out INTEGER;
 		Grad		: out INTEGER;
-		avance	: out INTEGER:=0;
-		leer		: out STD_LOGIC:='0';
+		avance	: out NATURAL;
+		leer		: out STD_LOGIC;
 		motor1	: out STD_LOGIC_VECTOR (1 downto 0)				-- Primer motor
       );                                 
 end PWMModule  ;
@@ -36,9 +36,9 @@ constant pos5           : INTEGER := 770000;
 constant pos6           : INTEGER := 880000;  
 constant pos7           : INTEGER := 770000;  
 constant pos8           : INTEGER := 660000;  
-signal 	vel				: INTEGER RANGE 0 TO 9 :=0;
+signal 	vel				: INTEGER RANGE 0 TO 9 :=4;
 signal	PWM_Count   	: INTEGER RANGE 1 TO Max;							--1000000;
-signal   nPulsos        : INTEGER RANGE 0 TO 999999 :=0 ;                -- contador de pulsos por cuadratura
+signal   nPulsos        : Natural;
 
 begin
 
@@ -95,6 +95,7 @@ pausa			<= 1+(to_integer(UNSIGNED(dato_R(7 downto 5))));
 				end if;
 			elsif start = '0' then
 				leer <= '0';
+				vel <= 4;
 			end if;
 	end process;
 					

@@ -1,18 +1,22 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
+use IEEE.std_logic_unsigned.all;
 
 entity ADCModule is
 	port ( 
-			clk   : in  STD_LOGIC;
-			rst	: in  STD_LOGIC;
-			iDOUT : in  STD_LOGIC;
-			iGO   : in  STD_LOGIC := '0';
-			iCH   : in  STD_LOGIC_VECTOR(2 downto 0);
-			oDIN  : out STD_LOGIC;
-			oCS_n : out STD_LOGIC;
-			oSCLK : out STD_LOGIC;
-			OutCkt: out STD_LOGIC_VECTOR(11 downto 0)
+			clk   	: in  STD_LOGIC;
+			rst		: in  STD_LOGIC;
+			iDOUT 	: in  STD_LOGIC;
+			iGO   	: in  STD_LOGIC := '0';
+			iCH   	: in  STD_LOGIC_VECTOR(2 downto 0);
+			oDIN  	: out STD_LOGIC;
+			oCS_n 	: out STD_LOGIC;
+			oSCLK 	: out STD_LOGIC;
+			we_env 	: out STD_LOGIC_VECTOR(1 downto 0);			--(1) señal dato ADC listo (un ciclo de reloj bit(0)) bit(0) 14 ciclos clk 3.2KHz
+			dir_we	: out STD_LOGIC_VECTOR(9 downto 0);			--dir de ROM para guardar dato ADC
+			adc_ld	: out STD_LOGIC_VECTOR(11 downto 0);
+			OutCkt	: out STD_LOGIC_VECTOR(11 downto 0)			--valor ADC 
 			); 
 end entity;
 
@@ -26,16 +30,21 @@ architecture ADCModule_arc of ADCModule is
 			);       
 	end component;
 
-signal cont, m_cont	: INTEGER;
+signal cont, m_cont	: INTEGER:=0;
 signal go_en			: STD_LOGIC;
 signal iCLK, iCLK_n	: STD_LOGIC;
+signal dir1				: STD_LOGIC_VECTOR(9 downto 0):="0000000000";
 signal adc_data		: STD_LOGIC_VECTOR(11 downto 0);
+signal Dat_B			: STD_LOGIC:='0';
 
 begin
 
 CLKPSBS: sel_Ksps_pll port map (clk, iCLK, iCLK_n);
 
-oCS_n  <=  not go_en;
+oCS_n			<= not go_en;
+we_env(1)	<= Dat_B;							
+we_env(0)	<= iCLK;
+dir_we		<= dir1;
 
 with go_en select
    oSCLK <= iCLK when '1',
@@ -57,9 +66,12 @@ begin
 		cont <= 0;
 	 elsif (rising_edge(iCLK)) then 
 	   if (cont = 15) then
-			cont <= 0;
+			cont  <= 0;
+			dir1	<= dir1 + 1;
+			Dat_B <= '1';
 		else 
-			cont <= cont + 1;
+			cont	<= cont + 1;
+			Dat_B <= '0';
 		end if;
 	 end if;
 end process counter1_proc;
@@ -88,10 +100,11 @@ begin
 		end if;
 end process channel_ADC_proc;
 
-output_ADC_proc: process(iCLK, iCLK_n, go_en)
+output_ADC_proc: process(iCLK, go_en)
 begin
 		if(go_en = '0') then 
 			adc_data <= "000000000000";
+			adc_ld   <= "000000000000";
 		elsif(rising_edge(iCLK)) then 
 			if (m_cont = 3) then
 				adc_data(11) <= iDOUT;
@@ -99,27 +112,28 @@ begin
 				adc_data(10) <= iDOUT;
 			elsif (m_cont = 5) then
 				adc_data(9)  <= iDOUT;
-		  elsif (m_cont = 6)  then 
+		   elsif (m_cont = 6)  then 
 				adc_data(8)  <= iDOUT;
-		  elsif (m_cont = 7)  then 
+		   elsif (m_cont = 7)  then 
 				adc_data(7)  <= iDOUT;
-		  elsif (m_cont = 8)  then 
+		   elsif (m_cont = 8)  then 
 				adc_data(6)  <= iDOUT;
-		  elsif (m_cont = 9)  then 
+		   elsif (m_cont = 9)  then 
 				adc_data(5)  <= iDOUT;
-		  elsif (m_cont = 10) then 
+		   elsif (m_cont = 10) then 
 				adc_data(4)  <= iDOUT;
-		  elsif (m_cont = 11) then 
+		   elsif (m_cont = 11) then 
 				adc_data(3)  <= iDOUT;
-		  elsif (m_cont = 12) then 
+		   elsif (m_cont = 12) then 
 				adc_data(2)  <= iDOUT;
-		  elsif (m_cont = 13) then 
+		   elsif (m_cont = 13) then 
 				adc_data(1)  <= iDOUT;
-		  elsif (m_cont = 14) then 
+		   elsif (m_cont = 14) then 
 				adc_data(0)  <= iDOUT;
-		  elsif (m_cont = 1)  then 
+		   elsif (m_cont = 1)  then 
 				OutCkt <= adc_data; 
-		  end if;
+				adc_ld <= adc_data;
+		   end if;
 	 end if;
 end process output_ADC_proc;
 

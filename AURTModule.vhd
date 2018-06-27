@@ -7,7 +7,7 @@ use IEEE.std_logic_unsigned.all;
 
 entity AURTModule is
 	Port(
-			posPoli	: in  integer;
+			posPoli	: in  natural;
 			clk 		: in  std_logic;
 			leerADC	: in  std_logic;
 			Bluet_D	: in  std_logic_vector(11 downto 0);   -- son los que se hablitan para mandar datos de la FPGA a la PC
@@ -23,7 +23,8 @@ architecture behavioral of AURTModule is
 
 signal tx_data		: std_logic_vector(7 downto 0);
 signal rx_data		: std_logic_vector(7 downto 0);
-signal avanPoli	: std_logic_vector(7 downto 0);
+signal avanPoli	: std_logic_vector(11 downto 0);
+signal Poli1,Poli2: STD_logic_vector(7 downto 0);
 signal tx_start	: std_logic:='0';
 signal enviar 		: std_logic:='0';
 signal cont			: integer:=0;
@@ -59,7 +60,7 @@ end component rx;
 begin
 	
 iCLK		<= we_enR(0);
-
+avanPoli <= std_logic_vector(to_unsigned(posPoli, avanPoli'length));
 
 	process(iCLK)
 	begin
@@ -95,15 +96,23 @@ iCLK		<= we_enR(0);
 				tx_data(7 downto 6)<="01";
 				tx_start<='1';
 				ledg<=tx_data;
-			elsif cont >= 4 then										-- posiciones para poder hacer envio de info a la pc
+			elsif cont >= 4 then
 				tx_start<='0';
-			elsif cont = 0 then
-				tx_start<='0';
+			elsif cont >= 5 and (tx_busy='0') then			-- 11 001100
+				Poli1(5 downto 0) <= avanPoli(5 downto 0);
+				Poli1(7 downto 6)<="10";
+				tx_start<='1';			
+			elsif cont >= 6 then
+				tx_start<='0';			
+			elsif cont = 7 and (tx_busy='0') then			-- 11 001100
+				Poli2(5 downto 0) <= avanPoli(11 downto 6);
+				Poli1(7 downto 6)<="11";
+				tx_start<='1';
+			elsif cont >= 8 then
+				tx_start<='0';			
 			end if;
 		end if;
 	end process;
-	
-	
 	
 	
 

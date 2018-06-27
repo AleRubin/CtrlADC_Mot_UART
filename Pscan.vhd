@@ -84,7 +84,7 @@ architecture Pscan_arc of Pscan is
 	
 	component AURTModule is
 		Port(
-			posPoli	: in  integer;
+			posPoli	: in  natural;
 			clk 		: in  std_logic;
 			leerADC	: in  std_logic;
 			Bluet_D	: in  std_logic_vector(11 downto 0);   -- son los que se hablitan para mandar datos de la FPGA a la PC

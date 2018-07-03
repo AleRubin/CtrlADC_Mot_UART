@@ -29,7 +29,6 @@ begin
 				busy<='1';
 				datafll(0)<='0';
 				datafll(9)<='1';
-				
 				datafll(8 downto 1)<=data;
 			end if;
 			if(tx_flg='1')	then

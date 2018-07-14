@@ -7,6 +7,8 @@ entity ADCModule is
 	port ( 
 			clk   	: in  STD_LOGIC;
 			rst		: in  STD_LOGIC;
+			sSync		: in  STD_LOGIC;
+			LeerPWM	: in  STD_LOGIC;	
 			iDOUT 	: in  STD_LOGIC;
 			iGO   	: in  STD_LOGIC := '0';
 			iCH   	: in  STD_LOGIC_VECTOR(2 downto 0);
@@ -31,8 +33,10 @@ architecture ADCModule_arc of ADCModule is
 	end component;
 
 signal cont, m_cont	: INTEGER:=0;
+signal PsSync			: INTEGER:=0;			
 signal go_en			: STD_LOGIC;
 signal iCLK, iCLK_n	: STD_LOGIC;
+signal LeerADC			: STD_LOGIC;	
 signal dir1				: STD_LOGIC_VECTOR(9 downto 0):="0000000000";
 signal adc_data		: STD_LOGIC_VECTOR(11 downto 0);
 signal Dat_B			: STD_LOGIC:='0';
@@ -100,12 +104,27 @@ begin
 		end if;
 end process channel_ADC_proc;
 
+Num_PsSync:process(sSync,rst)
+	begin
+		if rst = '0' then
+			PsSync <= 0;
+		elsif rising_edge(sSync) then
+				if PsSync = 10 then
+					LeerADC <= '0';
+					PsSync  <= 0; 
+				else
+					PsSync <= PsSync+1;
+					LeerADC <= '1';
+				end if;
+		end if;
+end process;
+
 output_ADC_proc: process(iCLK, go_en)
 begin
 		if(go_en = '0') then 
 			adc_data <= "000000000000";
 			adc_ld   <= "000000000000";
-		elsif(rising_edge(iCLK)) then 
+		elsif(rising_edge(iCLK)) and (LeerADC = '1') and (LeerPWM = '1') then 
 			if (m_cont = 3) then
 				adc_data(11) <= iDOUT;
 			elsif (m_cont = 4) then 

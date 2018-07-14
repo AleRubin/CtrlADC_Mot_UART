@@ -25,7 +25,9 @@ entity Pscan is
 			RX			: IN  STD_LOGIC;
 			--conexiones PWM para Motor DC
 			encPhases: IN  STD_LOGIC_VECTOR(1 DOWNTO 0);
-			motDC		: OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
+			motDC		: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			--conexiones PWM para Motor DC
+			sSincro	: IN STD_LOGIC
 	  );
 end entity;
 
@@ -35,6 +37,8 @@ architecture Pscan_arc of Pscan is
 		port ( 
 			clk   	: in  STD_LOGIC;
 			rst		: in  STD_LOGIC;
+			sSync		: in  STD_LOGIC;
+			LeerPWM	: in  STD_LOGIC;	
 			iDOUT 	: in  STD_LOGIC;
 			iGO   	: in  STD_LOGIC := '0';
 			iCH   	: in  STD_LOGIC_VECTOR(2 downto 0);
@@ -124,7 +128,7 @@ signal leerTesp				: STD_LOGIC:='0';
 begin
 
 
-ADC	: ADCModule 	port map(clk, rst, iDOUT, iGO, iCH, oDIN, oCS_n, oSCLK, we_en, dir_wROM, ADC_D, ADC_Data);
+ADC	: ADCModule 	port map(clk, rst, sSincro, leerTesp, iDOUT, iGO, iCH, oDIN, oCS_n, oSCLK, we_en, dir_wROM, ADC_D, ADC_Data);
 
 LCD	: LCDModule 	port map(clk, rst, Derech, Izq, RS, RW, ENA, iCH, ADC_Data,temp,steps, AvancPhases, DATA_LCD, BLCD);
 

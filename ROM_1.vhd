@@ -21,23 +21,19 @@ architecture Behavioral of ROM_1 is
 
 	begin
 
-ESCRIBIR_ROM:process (clk)
+ESCRIBIR_ROM:process (we_enU)
         begin
-            if (rising_edge(clk)) then
-                if (we_enU(1) = '1') then
+            if (rising_edge(we_enU(1))) then
                 mem(conv_integer(dir_1)) <= D_ADC;
             end if;
-        end if;
     end process;
 
 
 	 
-LEER_ROM:process (clk)
+LEER_ROM:process (we_enU(1))
         begin
-        if (rising_edge(clk)) then
-            if we_enU(1) = '0' then
+        if (rising_edge(we_enU(1))) then
 					D_out <= mem(conv_integer(dir_1));
-            end if;
         end if;
     end process;
 	

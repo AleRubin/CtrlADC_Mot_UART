@@ -1,0 +1,5 @@
+PLL_Name	ADCModule:ADC_1|sel_Ksps_pll:CLKPSBS|altpll:altpll_component|sel_Ksps_pll_altpll:auto_generated|pll1
+PLLJITTER	30
+PLLSPEmax	84
+PLLSPEmin	-53
+
